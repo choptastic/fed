@@ -1,4 +1,4 @@
-# fed - _F_inding _Ed_itor
+# fed - (F)inding (ED)itor
 
 Quickly find and edit the files of a project with the editor of your choice.
 This is optimized for developers for whom their IDE of choice is a terminal
