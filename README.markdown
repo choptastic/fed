@@ -6,6 +6,11 @@ screen in Linux and Unix.
 
 [Homepage](http://sigma-star.com/page/fed)
 
+## Installation
+
+In the `fed` directory, type `make install`. This will copy the `fed` script to
+`/usr/bin/fed`.
+
 ## Initialization
 
 In the root of the project you wish to enable for usage with `fed`, you simply
