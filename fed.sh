@@ -4,7 +4,7 @@
 function find_fed() {
 	if [ -e ".fed" ] ; then
 		source .fed
-		$editor $(find . -name "*$1*" | grep -v "~$" | grep -v ".beam$")
+		$editor $(find . -name "$1*" | grep -v "~$" | grep -v ".beam$")
 	else
 		if [ `pwd` == "/" ]; then
 			echo Not in a fed project
