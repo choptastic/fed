@@ -92,16 +92,16 @@ Then any `fed` commands would be translated to `vim -l filename`
 
 ## TODO
 
-See [TODO.markdown](http://github.com/choptastic/fed/TODO.markdown)
+See [TODO.markdown](http://github.com/choptastic/fed/blob/master/TODO.markdown)
 
 ## Changelog
 
-See [CHANGELOG.markdown](http://github.com/choptastic/fed/CHANGELOG.markdown)
+See [CHANGELOG.markdown](http://github.com/choptastic/fed/blob/master/CHANGELOG.markdown)
 
 ## License
 
 `fed` is licensed under the
-[MIT License](http://github.com/choptastic/fed/MIT-LICENSE.txt)
+[MIT License](http://github.com/choptastic/fed/blob/master/MIT-LICENSE.txt)
 
 ## Copyright
 
