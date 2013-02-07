@@ -19,10 +19,9 @@ type  `fed -init`.
 ```
 $ fed -init
 
-Enter the command of your editor of choice [default: vim]:
 Enter any file extensions for this project you wish to ignore [default: none]
-How to handle multiple matching filenames (fail|ask|loadall) [default: fail]
-How to handle files that don't exist (fail|ask|create) [default: create]
+How to handle multiple matching filenames (fail|ask|loadall) [default: ask]
+How to handle files that don't exist (fail|ask|create) [default: ask]
 ```
 
 This will create a .fed file in the current directory, which will serve as the
@@ -65,6 +64,31 @@ project contains 3 files: `file1.txt`, `file2.txt`, and `file3.txt`.
 If your editor of choice is `vim`, and you've configured `fed` to load all
 files (`loadall` during configuration) then typing `fed file` will be the same
 as typing: `vim file1.txt file2.txt file3.txt`
+
+## Global Configurations
+
+You can set global `fed` settings with the `.fedconf` in your home directory.
+
+Options that can be set in the `.fedconf` file are:
+
+  * `alt\_roots` - Alternative `fed` system roots. For example, if a project
+    doesn't have a `.fed` file at the root of the project, but you commonly use
+    the `git` versioning system, you could tell `fed` to stop searching and run
+    with defaults if it finds a `.git` file.  Example: `alt\_roots=.git`.
+    Further, you can specify more than one by delimiting with spaces:
+    `alt\_roots=.git .hg`
+  * `editor` - Set the default editor. If no editor is set in a project's
+    `.fed` file, it'll just use whatever editor is provided. Typically, it's
+    probably good form to let the user decide their editor instead of setting
+    it in the project's `.fed` file.
+  * `editor(Extension List)` - Set the editor for a list of extensions. For
+    example: `editor(.gif .png .jpg .jpeg .bmp)=gimp` would set the editor for
+    image extensions to use The Gimp.
+  * `ignore` - Set the files you wish to ignore, separated by spaces. Files are
+    specified using regular expressions. Example: `ignore=~$ \.beam$` (means to
+    ignore all files that end with a tilde `~` and all files with the `.beam`
+    extension.
+				
 
 ## Additional Switches
 
