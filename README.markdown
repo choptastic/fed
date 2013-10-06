@@ -82,7 +82,7 @@ Options that can be set in the `.fedconf` file are:
     probably good form to let the user decide their editor instead of setting
     it in the project's `.fed` file.
   * `editor(Extension List)` - Set the editor for a list of extensions. For
-    example: `editor(.gif .png .jpg .jpeg .bmp)=gimp` would set the editor for
+    example: `editor(gif png jpg jpeg bmp)=gimp` would set the editor for
     image extensions to use The Gimp.
   * `ignore` - Set the files you wish to ignore, separated by spaces. Files are
     specified using regular expressions. Example: `ignore=~$ \.beam$` (means to
