@@ -7,15 +7,31 @@ use Cwd;
 
 sub main {
 	my @argv = @_;
+	my ($file) = @argv;
+
 	my %cfg = &default_config();
 	%cfg = &load_config("~/.fedconf",%cfg);
 
 	to_fed_root(%cfg);
 	%cfg = &load_config(".fed",%cfg);
 
-
 	&print_config(%cfg);
+
+	my @files = &get_potential_files($file, %cfg);
+	print("Found Files:\n\t".join("\n\t",@files)."\n\n");
 }
+
+sub get_potential_files {
+	my ($file, %cfg) = @_;
+	my $find = "find . -name \"$file*\"";
+	my $filters = "";
+	foreach my $ignore (@{$cfg{"ignore"}}) {
+		$filters .= " | grep -v \"$ignore\" ";
+	}
+	my $files = `$find $filters`;
+	return split("\n", $files);
+}
+
 
 sub default_config{
 	my %config = (
@@ -67,10 +83,12 @@ sub parse_config {
 
 sub print_config{
 	my (%config) = @_;
+	print("Loaded Config:\n");
 	foreach my $k (keys(%config)) {
 		my $v = &format_config_value($config{$k});
-		print "$k => $v\n";
+		print "\t$k => $v\n";
 	}
+	print("\n");
 }
 
 sub format_config_value
@@ -97,7 +115,7 @@ sub to_fed_root {
 	if($cwd eq "/"){
 		die("Error: Not in a fed project. No root file (".join(", ",@roots)." found in parent directories.");
 	}elsif($is_root) {
-		print("Project Root: $cwd\n");
+		print("Project Root:\n\t$cwd\n\n");
 		return 1;		
 	}else{
 		chdir("..");
