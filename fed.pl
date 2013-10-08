@@ -11,7 +11,7 @@ sub main {
 	if($file eq "-init") {
 		&execute_init(".fed");
 	}elsif($file eq "-global") {
-		&execute_init("~/.fedconf");
+		&execute_init($ENV{"HOME"}."/.fedconf");
 	}else{
 		&execute_file(@_);
 	}
@@ -22,7 +22,7 @@ sub execute_init {
 	my %cfg = &default_config();
 	%cfg = load_config($file, %cfg);
 
-	print("Initializing Fed\n");
+	print("Initializing $file\n");
 
 	my $new_config = "";
 	my $ignore = join(" ",@{$cfg{"ignore"}});
@@ -40,7 +40,7 @@ Separate with spaces. ",$ignore);
 	$no_exist = &get_until_valid("How to handle filenames that don't exist?",("ask","create","fail"));
 	$new_config .= "no_exist=$no_exist\n";
 
-	if($file eq "~/.fedconf") {
+	if($file =~ /fedconf$/) {
 		my $editor = $cfg{"editor"};
 		$editor = &get("What would you like to use as your default editor?", $editor);
 		$new_config .= "editor=$editor\n";
@@ -63,7 +63,7 @@ sub execute_file {
 	my($file) = @_;
 
 	my %cfg = &default_config();
-	%cfg = &load_config("~/.fedconf",%cfg);
+	%cfg = &load_config($ENV{"HOME"}."/.fedconf",%cfg);
 
 	to_fed_root(%cfg);
 	%cfg = &load_config(".fed",%cfg);
