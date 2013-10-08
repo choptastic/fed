@@ -243,7 +243,8 @@ sub format_config_value
 
 sub to_fed_root {
 	my (%config)=@_;
-	my @roots = $config{"alt_roots"};
+	my $roots = $config{"alt_roots"};
+	my @roots = @{$roots};
 	unshift(@roots, ".fed");
 	my $is_root = &is_root(@roots);
 
