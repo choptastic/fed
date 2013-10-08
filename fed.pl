@@ -19,6 +19,113 @@ sub main {
 
 	my @files = &get_potential_files($file, %cfg);
 	print("Found Files:\n\t".join("\n\t",@files)."\n\n");
+
+	&execute_files(\%cfg, $file, @files);
+}
+
+sub execute_files {
+	my ($cfg, $file, @files) = @_;
+
+	if($#files == -1) {
+		&execute_none($cfg, $file);
+	}elsif($#files == 0) {
+		&execute_single($cfg, $files[0]);
+	}elsif($#files > 0) {
+		&execute_multiple($cfg, @files);
+	}
+}
+
+sub execute_none {
+	my ($cfg, $file) = @_;
+	my $ne = $cfg->{"no_exist"};
+	if($ne eq "fail") {
+		die("No matching file. Failing per configuration (no_exist = fail)\n");
+	}elsif($ne eq "create") {
+		&execute_single($cfg, $file);
+	}elsif($ne eq "ask") {
+		my $response = &get_until_valid("No matching file found. How would you like to proceed? (c)reate or (f)ail",("c","f"));
+		if($response eq "c") {
+			&execute_single($cfg, $file);
+		}elsif($response eq "f") {
+			die("No matching file. Failing");
+		}
+	}
+}
+
+sub execute_single {
+	my ($cfg, $file) = @_;
+	my $editor = $cfg->{"editor"};
+	my $ext = &extract_extension($file);
+	if(defined($cfg->{"editor_$ext"})) {
+		system($cfg->{"editor_$ext"}." \"$file\"");
+	}elsif(defined($cfg->{"editor"})) {
+		system($cfg->{"editor"}." \"$file\"");
+	}else{
+		die("No editor defined for file with extension $ext. Either define a univeral editor or add extension-specific editors");
+	}
+}
+
+sub execute_multiple {
+	my($cfg, @files) = @_;
+	my $mm = $cfg->{"multiple_matches"};
+	if($mm eq "fail") {
+		die("Multiple matching files. Failing per configuration (multiple_matches = fail)\n");
+	}elsif($mm eq "loadall") {
+		die("Load All not implemented");
+	}elsif($mm eq "ask") {
+		my $file = &ask_multiple(@files);
+		&execute_single($cfg, $file);
+	}
+}
+
+sub ask_multiple {
+	my @files = @_;
+	print("Multiple Matching Files:\n");
+	foreach my $i (keys(@files)) {
+		print("\t(".($i+1)."): $files[$i]\n");
+	}
+	my $filenum = &get_until_valid_range("Which file to load [1-".($#files+1)." or (f)ail]?", 1, $#files+1);
+	if($filenum eq "f") {
+		die("Cancelling");
+	}else{
+		return $files[$filenum-1];
+	}
+}
+
+sub extract_extension {
+	my ($file) = @_;
+	if($file =~ /\.([\w-]+)$/) {
+		return $1;
+	}else{
+		return "";
+	}
+}
+
+sub get_until_valid {
+	my ($prompt, @list) = @_;
+	my $val;
+	do {
+		print "$prompt (".join("/",@list)."): ";
+		$val = <STDIN>;
+		chomp($val);
+	} while(not($val ~~ @list));
+	return $val;
+}
+
+sub get_until_valid_range {
+	my ($prompt, $min, $max) = @_;
+	my $val;
+	do {
+		print "$prompt: ";
+		$val = <STDIN>;
+		chomp($val);
+	}until($val eq "f" or (&is_integer($val) and $val>=$min and $val<=$max));
+	return $val;
+}	
+
+sub is_integer {
+	my ($val) = @_;
+	return !ref($val) and $val == int($val); ## tests whether is numerically equal to itself.
 }
 
 sub get_potential_files {

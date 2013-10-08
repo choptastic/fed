@@ -44,7 +44,7 @@ depending on your configuration above, `fed` will either:
 
   * `fail`: fail by letting you know which files conflict
   * `ask`: ask you which file you wish to load
-  * `loadall`: load all files in the editor
+  * `loadall`: load all files in the editor **(NOT IMPLEMENTED)**
 
 ## Files that don't exist, and file creation
 
@@ -88,6 +88,10 @@ Options that can be set in the `.fedconf` file are:
     specified using regular expressions. Example: `ignore=~$ \.beam$` (means to
     ignore all files that end with a tilde `~` and all files with the `.beam`
     extension.
+  * `multiple_matches` - How to handle multiple matches. (`ask`, `fail`, or
+    `loadall`). `loadall` is not currently implemented
+  * `no_exist` - How to handle a filename that does not currently exist in the
+    project tree. (`create`, `ask`, or `fail`)
 				
 
 ## Additional Switches
@@ -129,4 +133,4 @@ See [CHANGELOG.markdown](http://github.com/choptastic/fed/blob/master/CHANGELOG.
 
 ## Copyright
 
-`fed` is copyright 2013 (c) Sigma Star Systems, LLC
+`fed` is copyright 2013 (c) [Jesse Gumm](http://jessegumm.com) ([@jessegumm](http://twitter.com/jessegumm))
