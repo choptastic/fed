@@ -36,8 +36,8 @@ found file.
 
 Note, that `filename` can be a partial filename.
 
-For example, if the file you wish to edit is called `db\_tournament.erl`, you
-could probably get away with typing `fed db\_tourn`.
+For example, if the file you wish to edit is called `db_tournament.erl`, you
+could probably get away with typing `fed db_tourn`.
 
 In the event of more than one file is found with that matching name, then
 depending on your configuration above, `fed` will either:
@@ -71,12 +71,12 @@ You can set global `fed` settings with the `.fedconf` in your home directory.
 
 Options that can be set in the `.fedconf` file are:
 
-  * `alt\_roots` - Alternative `fed` system roots. For example, if a project
+  * `alt_roots` - Alternative `fed` system roots. For example, if a project
     doesn't have a `.fed` file at the root of the project, but you commonly use
     the `git` versioning system, you could tell `fed` to stop searching and run
-    with defaults if it finds a `.git` file.  Example: `alt\_roots=.git`.
+    with defaults if it finds a `.git` file.  Example: `alt_roots=.git`.
     Further, you can specify more than one by delimiting with spaces:
-    `alt\_roots=.git .hg`
+    `alt_roots=.git .hg`
   * `editor` - Set the default editor. If no editor is set in a project's
     `.fed` file, it'll just use whatever editor is provided. Typically, it's
     probably good form to let the user decide their editor instead of setting
