@@ -1,2 +1,2 @@
-editor=vim
-ignore=*~$
+multiple_matches=fail
+no_exist=fail

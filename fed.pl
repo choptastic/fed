@@ -6,8 +6,61 @@ use Cwd;
 &main(@ARGV);
 
 sub main {
-	my @argv = @_;
-	my ($file) = @argv;
+	my ($file) = @_;
+
+	if($file eq "-init") {
+		&execute_init(".fed");
+	}elsif($file eq "-global") {
+		&execute_init("~/.fedconf");
+	}else{
+		&execute_file(@_);
+	}
+}
+
+sub execute_init {
+	my($file) = @_;
+	my %cfg = &default_config();
+	%cfg = load_config($file, %cfg);
+
+	print("Initializing Fed\n");
+
+	my $new_config = "";
+	my $ignore = join(" ",@{$cfg{"ignore"}});
+	$ignore = "none" if($ignore eq "");
+	$ignore = &get("Enter any file patterns you wish to ignore.\n
+These are file patterns that work with 'grep'.
+Separate with spaces. ",$ignore);
+	$new_config .= "ignore=$ignore\n";
+
+	my $multiple_matches = $cfg{"multiple_matches"};
+	$multiple_matches = &get_until_valid("How to handle multiple matching filenames?",("ask","fail"));
+	$new_config .= "multiple_matches=$multiple_matches\n";
+
+	my $no_exist = $cfg{"no_exist"};
+	$no_exist = &get_until_valid("How to handle filenames that don't exist?",("ask","create","fail"));
+	$new_config .= "no_exist=$no_exist\n";
+
+	if($file eq "~/.fedconf") {
+		my $editor = $cfg{"editor"};
+		$editor = &get("What would you like to use as your default editor?", $editor);
+		$new_config .= "editor=$editor\n";
+	
+		my $alt_roots = join(" ",@{$cfg{"alt_roots"}});
+		$alt_roots = &get("Enter any other filenames you'd like to use whose existence represents the
+root of a project (e.g. .git or .hg).
+Separate each file by spaces.",$alt_roots);
+		$new_config .= "alt_roots=$alt_roots\n";
+	}
+
+	open(F, ">$file");
+	print F $new_config;
+	close F;
+	print("New fed config written to $file\n");
+}
+				
+
+sub execute_file {
+	my($file) = @_;
 
 	my %cfg = &default_config();
 	%cfg = &load_config("~/.fedconf",%cfg);
@@ -18,7 +71,7 @@ sub main {
 	&print_config(%cfg);
 
 	my @files = &get_potential_files($file, %cfg);
-	print("Found Files:\n\t".join("\n\t",@files)."\n\n");
+	print("Found Files:\n\t".join("\n\t",@files)."\n\n") if($#files>-1);
 
 	&execute_files(\%cfg, $file, @files);
 }
@@ -92,41 +145,6 @@ sub ask_multiple {
 	}
 }
 
-sub extract_extension {
-	my ($file) = @_;
-	if($file =~ /\.([\w-]+)$/) {
-		return $1;
-	}else{
-		return "";
-	}
-}
-
-sub get_until_valid {
-	my ($prompt, @list) = @_;
-	my $val;
-	do {
-		print "$prompt (".join("/",@list)."): ";
-		$val = <STDIN>;
-		chomp($val);
-	} while(not($val ~~ @list));
-	return $val;
-}
-
-sub get_until_valid_range {
-	my ($prompt, $min, $max) = @_;
-	my $val;
-	do {
-		print "$prompt: ";
-		$val = <STDIN>;
-		chomp($val);
-	}until($val eq "f" or (&is_integer($val) and $val>=$min and $val<=$max));
-	return $val;
-}	
-
-sub is_integer {
-	my ($val) = @_;
-	return !ref($val) and $val == int($val); ## tests whether is numerically equal to itself.
-}
 
 sub get_potential_files {
 	my ($file, %cfg) = @_;
@@ -238,4 +256,55 @@ sub is_root{
 		return 1 if(-e $root);
 	}
 	return 0;
+}
+
+
+
+
+sub extract_extension {
+	my ($file) = @_;
+	if($file =~ /\.([\w-]+)$/) {
+		return $1;
+	}else{
+		return "";
+	}
+}
+
+sub get {
+	my($prompt, $default) = @_;
+	print "$prompt [Default: $default]: ";
+	my $val = <STDIN>;
+	chomp($val);
+	if($val eq "") {
+		return $default;
+	}else{
+		return $val;
+	}
+}
+
+sub get_until_valid {
+	my ($prompt, @list) = @_;
+	my $val;
+	do {
+		print "$prompt (".join("/",@list)."): ";
+		$val = <STDIN>;
+		chomp($val);
+	} while(not($val ~~ @list));
+	return $val;
+}
+
+sub get_until_valid_range {
+	my ($prompt, $min, $max) = @_;
+	my $val;
+	do {
+		print "$prompt: ";
+		$val = <STDIN>;
+		chomp($val);
+	}until($val eq "f" or (&is_integer($val) and $val>=$min and $val<=$max));
+	return $val;
+}	
+
+sub is_integer {
+	my ($val) = @_;
+	return !ref($val) and $val == int($val); ## tests whether is numerically equal to itself.
 }

@@ -19,7 +19,7 @@ type  `fed -init`.
 ```
 $ fed -init
 
-Enter any file extensions for this project you wish to ignore [default: none]
+Enter any file patterns that you wish to ignore [default: none]
 How to handle multiple matching filenames (fail|ask|loadall) [default: ask]
 How to handle files that don't exist (fail|ask|create) [default: ask]
 ```
