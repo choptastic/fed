@@ -11,6 +11,8 @@
   well as no matching files (`no_exist` in config)
 * Mark certain extensions and file patterns as files to ignore (`ignore` in
   config)
+* Initialization of project with `fed -init`
+* Global setting initilization with `fed -global`
 
 ## Proof of Concept
 
