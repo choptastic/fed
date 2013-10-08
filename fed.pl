@@ -8,13 +8,22 @@ use Cwd;
 sub main {
 	my ($file) = @_;
 
-	if($file eq "-init") {
+	if($#_ == -1 or $#_>0) {
+		&execute_usage();
+	}elsif($file eq "-init") {
 		&execute_init(".fed");
 	}elsif($file eq "-global") {
 		&execute_init($ENV{"HOME"}."/.fedconf");
 	}else{
 		&execute_file(@_);
 	}
+}
+
+sub execute_usage {
+	print "fed :: The (F)inding (ED)itor\n";
+	print "Usage: fed -init      # Initializes fed for the local project\n";
+	print "       fed -global    # Initializes fed configuration for all your projects\n";
+	print "       fed Filename   # Searches for Filename in the project and opens it in your editor\n";
 }
 
 sub execute_init {
