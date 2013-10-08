@@ -5,6 +5,10 @@ use Cwd;
 
 &main(@ARGV);
 
+sub version {
+	return "0.0.1 (2013-10-08)";
+}
+
 sub main {
 	my ($file) = @_;
 
@@ -20,7 +24,7 @@ sub main {
 }
 
 sub execute_usage {
-	print "fed :: The (F)inding (ED)itor\n";
+	print "fed :: The (F)inding (ED)itor. Version ".&version()."\n";
 	print "Usage: fed -init      # Initializes fed for the local project\n";
 	print "       fed -global    # Initializes fed configuration for all your projects\n";
 	print "       fed Filename   # Searches for Filename in the project and opens it in your editor\n";
