@@ -169,7 +169,8 @@ sub parse_config {
 		}elsif(/editor\s*=\s*(.*)/){
 			$config{"editor"} = $1;
 		}elsif(/alt_roots\s*=\s*(.+)/){
-			$config{"alt_roots"}=split(' ',$1);
+			my @alt_roots=split(' ',$1);
+			$config{"alt_roots"}=\@alt_roots;
 		}elsif(/editor\(([\w\s]*?)\)\s*=\s*(.*)/){
 			my $exts = $1;
 			my $cmd = $2;
@@ -177,7 +178,9 @@ sub parse_config {
 				$config{"editor_$ext"}=$cmd;
 			}
 		}elsif(/ignore\s*=\s*(.*)/){
-			$config{"ignore"}=split(' ',$1);
+			my @ignore=split(" ",$1);
+			$config{"ignore"}=\@ignore;
+			print("Config: ".$config{"ignore"});
 		}elsif(/no_exist\s*=\s*(create|fail|ask)/){
 			$config{"no_exist"}=$1;
 		}elsif(/multiple_matches\s*=\s*(fail|ask|loadall)/){
