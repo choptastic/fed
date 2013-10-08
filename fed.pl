@@ -180,7 +180,6 @@ sub parse_config {
 		}elsif(/ignore\s*=\s*(.*)/){
 			my @ignore=split(" ",$1);
 			$config{"ignore"}=\@ignore;
-			print("Config: ".$config{"ignore"});
 		}elsif(/no_exist\s*=\s*(create|fail|ask)/){
 			$config{"no_exist"}=$1;
 		}elsif(/multiple_matches\s*=\s*(fail|ask|loadall)/){
