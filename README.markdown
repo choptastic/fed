@@ -69,9 +69,11 @@ If your editor of choice is `vim`, and you've configured `fed` to load all
 files (`loadall` during configuration) then typing `fed file` will be the same
 as typing: `vim file1.txt file2.txt file3.txt`
 
-## Global Configurations
+## Configurations
 
-You can set global `fed` settings with the `.fedconf` in your home directory.
+You can manually edit set local (project-specific) and global `fed` settings
+with the `.fed` file in the root of your project or `.fedconf` in your home
+directory.
 
 Options that can be set in the `.fedconf` file are:
 
@@ -96,15 +98,27 @@ Options that can be set in the `.fedconf` file are:
     `loadall`). `loadall` is not currently implemented
   * `no_exist` - How to handle a filename that does not currently exist in the
     project tree. (`create`, `ask`, or `fail`)
-				
+		
+### Sample Configuration
 
-## Additional Switches
+```bash
+alt_roots=.git .hg
+editor=vim
+editor(jpg jpeg gif png bmp ico)=gimp
+ignore=\.beam$ ~$ \.sw\.$
+multiple_matches=ask
+no_exist=fail
+```		
+
+*NOTE* `alt_roots` has no meaning in a project-specific `.fed` file
+
+## Additional Switches (NOT IMPLEMENTED YET)
 
 You can provide additional switches to your editor by putting them before the
 filenames.
 
-As `fed` does not currently have any switches of its own except for `-init`, it
-will simply pass all provided switches to the editor.
+As `fed` does not currently have any switches of its own except for `-init` and
+`-global` it will simply pass all provided switches to the editor.
 
 ## FAQ
 
@@ -112,7 +126,8 @@ will simply pass all provided switches to the editor.
 
 It's perfectly common to use a different editor for different projects and
 languages. Therefore, you can configure, for example, Erlang and Lisp projects
-to use `emacs` while you'd prefer to use `vim` for PHP, Python.
+to use `emacs` while you'd prefer to use `vim` for PHP, Python, and The Gimp
+for editing images.
 
 ### What if I want to provide switches to my default editor
 
