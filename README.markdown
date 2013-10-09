@@ -6,6 +6,10 @@ screen in Linux and Unix.
 
 [Homepage](http://sigma-star.com/page/fed)
 
+[Demo Video](http://www.youtube.com/watch?v=UyNNUOAgymE)
+
+[Announcement](http://sigma-star.com/blog/post/introducing-fed)
+
 ## Installation
 
 In the `fed` directory, type `make install`. This will copy the `fed` script to
