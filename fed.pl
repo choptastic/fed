@@ -6,7 +6,7 @@ use Cwd;
 &main(@ARGV);
 
 sub version {
-	return "0.0.1 (2013-10-08)";
+	return "0.0.2 (2013-10-10)";
 }
 
 sub main {
