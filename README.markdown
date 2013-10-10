@@ -50,6 +50,13 @@ depending on your configuration above, `fed` will either:
   * `ask`: ask you which file you wish to load
   * `loadall`: load all files in the editor **(NOT IMPLEMENTED)**
 
+## Fuzzy Searching
+
+Fed can do fuzzy searching. Using the example above, you could do `fed dbtou`
+and it would find `db_tournament.erl`. Additionally, if you know one of the
+parent directories, you can separate partial directory names with /, for
+example `fed db/tour` would find the file in `src/database/db_tournament.erl`
+
 ## Files that don't exist, and file creation
 
 If `fed` is provided with a file that does not exist it uses the setting above:

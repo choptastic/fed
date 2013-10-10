@@ -83,11 +83,27 @@ sub execute_file {
 
 	&print_config(%cfg);
 
-	my @files = &get_potential_files($file, %cfg);
-	print("Found Files:\n\t".join("\n\t",@files)."\n\n") if($#files>-1);
+	my @files = &get_potential_files_fuzzy($file, %cfg);
+	@files = &filter_directories(@files);
+
+	## We only want to show the file list if it's exactly 1, since the file
+	#list we found will automatically be reproduced if it's more than one, and
+	#if it's zero, there are no files to show
+	print("Found File:\n\t".join("\n\t",@files)."\n\n") if($#files==0);
 
 	&execute_files(\%cfg, $file, @files);
 }
+
+sub filter_directories {
+	my @files = ();
+	foreach(@_) {
+		if(!-d $_) {
+			push(@files, $_)
+		}
+	}
+	return @files;
+}
+	
 
 sub execute_files {
 	my ($cfg, $file, @files) = @_;
@@ -158,18 +174,54 @@ sub ask_multiple {
 	}
 }
 
-
+## Currently disabled. Test for a while with just fuzzy searching, and see what happens
 sub get_potential_files {
 	my ($file, %cfg) = @_;
 	my $find = "find . -name \"$file*\"";
-	my $filters = "";
-	foreach my $ignore (@{$cfg{"ignore"}}) {
-		$filters .= " | grep -v \"$ignore\" ";
-	}
+	my $filters = &ignore_commands(%cfg);
 	my $files = `$find $filters`;
 	return split("\n", $files);
 }
 
+sub get_potential_files_fuzzy {
+	my ($file, %cfg)  = @_;
+	my @parts = split(//, $file);
+	@parts = map {
+		if($_ eq "."){
+			"\\.";
+		}elsif($_ eq '"') {
+			"\\\"";
+		}elsif($_ eq "/") {
+			".*?/";
+		}else{
+			$_;
+		}
+	} @parts;
+	my $regex = join("[^/]*?",@parts);
+	my $find = "find . ";
+	my $filters = &ignore_commands(%cfg);
+	my $files = `$find $filters`;
+	my @files = split("\n",$files);
+
+	print "Regex: $regex\n";
+	my @newfiles = ();
+	foreach (@files) {
+		if(m{$regex}si) {
+			push(@newfiles, $_);
+		}
+	}
+	return @newfiles;
+
+}
+
+sub ignore_commands {
+	my (%cfg) = @_;
+	my $filters;
+	foreach my $ignore (@{$cfg{"ignore"}}) {
+		$filters .= " | grep -v \"$ignore\" ";
+	}
+	return $filters;
+}
 
 sub default_config{
 	my %config = (
