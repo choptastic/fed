@@ -6,7 +6,8 @@ screen in Linux and Unix.
 
 [Homepage](http://sigma-star.com/page/fed)
 
-[Demo Video](http://www.youtube.com/watch?v=UyNNUOAgymE)
+[Short Demo Video](http://youtu.be/iIsmgZlY3_M) | 
+[Long Demo Video](http://www.youtube.com/watch?v=UyNNUOAgymE)
 
 [Announcement](http://sigma-star.com/blog/post/introducing-fed)
 
