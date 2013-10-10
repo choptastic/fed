@@ -203,7 +203,7 @@ sub get_potential_files_fuzzy {
 	my $files = `$find $filters`;
 	my @files = split("\n",$files);
 
-	print "Regex: $regex\n";
+	#print "Regex: $regex\n";
 	my @newfiles = ();
 	foreach (@files) {
 		if(m{$regex}si) {
