@@ -13,6 +13,7 @@
   config)
 * Initialization of project with `fed -init`
 * Global setting initilization with `fed -global`
+* Fuzzy searching (e.g. `fed db/tmt.e` would find `src/db/db_tournament.erl`)
 
 ## Proof of Concept
 
