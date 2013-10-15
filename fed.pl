@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use warnings;
 use Cwd;
 
 &main(@ARGV);
@@ -178,34 +179,35 @@ sub ask_multiple {
 }
 
 ## Currently disabled. Test for a while with just fuzzy searching, and see what happens
-sub get_potential_files {
-	my ($file, %cfg) = @_;
-	my $find = "find . -name \"$file*\"";
-	my $filters = &ignore_commands(%cfg);
-	my $files = `$find $filters`;
-	return split("\n", $files);
-}
+# sub get_potential_files {
+# 	my ($file, %cfg) = @_;
+# 	my $find = "find . -name \"$file*\"";
+# 	my $filters = &ignore_commands(%cfg);
+# 	my $files = `$find $filters`;
+# 	return split("\n", $files);
+# }
 
 sub get_potential_files_substring {
 	my ($file, %cfg) = @_;
+	return &get_potential_files_wrapper($file, \&remap_parts_substring, "", %cfg);
+}
+	
+
+sub get_potential_files_fuzzy {
+	my ($file, %cfg)  = @_;
+	return &get_potential_files_wrapper($file, \&remap_parts_fuzzy, "[^/]*?", %cfg);
+}
+
+sub get_potential_files_wrapper {
+	my ($file, $remap_fun, $part_joiner, %cfg) = @_;
 	my @parts = split(//, $file);
-	@parts = map {
-		if($_ eq "."){
-			"[^/]*?\\.";
-		}elsif($_ eq '"'){
-			"\\\"";
-		}elsif($_ eq "/"){
-			".*?/.*?";
-		}else{
-			$_;
-		}
-	} @parts;
-	my $regex = join("", @parts);
+	@parts = &{$remap_fun}(@parts);
+	my $regex = join($part_joiner,@parts);
 	my $find = "find . ";
 	my $filters = &ignore_commands(%cfg);
 	my $files = `$find $filters`;
 	my @files = split("\n",$files);
-	
+
 	#print "Regex: $regex\n";
 	my @newfiles = ();
 	foreach (@files) {
@@ -215,12 +217,10 @@ sub get_potential_files_substring {
 	}
 	return @newfiles;
 }
-	
 
-sub get_potential_files_fuzzy {
-	my ($file, %cfg)  = @_;
-	my @parts = split(//, $file);
-	@parts = map {
+
+sub remap_parts_fuzzy {
+	return map {
 		if($_ eq "."){
 			"\\.";
 		}elsif($_ eq '"') {
@@ -230,22 +230,21 @@ sub get_potential_files_fuzzy {
 		}else{
 			$_;
 		}
-	} @parts;
-	my $regex = join("[^/]*?",@parts);
-	my $find = "find . ";
-	my $filters = &ignore_commands(%cfg);
-	my $files = `$find $filters`;
-	my @files = split("\n",$files);
-
-	#print "Regex: $regex\n";
-	my @newfiles = ();
-	foreach (@files) {
-		if(m{$regex}si) {
-			push(@newfiles, $_);
+	} @_;
+}
+		
+sub remap_parts_substring {
+	return map {
+		if($_ eq "."){
+			"[^/]*?\\.";
+		}elsif($_ eq '"'){
+			"\\\"";
+		}elsif($_ eq "/"){
+			".*?/.*?";
+		}else{
+			$_;
 		}
-	}
-	return @newfiles;
-
+	} @_;
 }
 
 sub ignore_commands {
