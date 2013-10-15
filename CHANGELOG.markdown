@@ -13,7 +13,12 @@
   config)
 * Initialization of project with `fed -init`
 * Global setting initilization with `fed -global`
-* Fuzzy searching (e.g. `fed db/tmt.e` would find `src/db/db_tournament.erl`)
+* Substring partial searching (`fed el/panel.e` will find
+  `elements/forms/element_panel.erl` but not
+  `elements/forms/elements_pane_l.erl`).
+* If substring partial searching fails to find anything, fuzzy searching takes
+  over (e.g. `fed db/tmt.e` would find `src/db/db_tournament.erl`)
+
 
 ## Proof of Concept
 

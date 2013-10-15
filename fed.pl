@@ -83,7 +83,10 @@ sub execute_file {
 
 	&print_config(%cfg);
 
-	my @files = &get_potential_files_fuzzy($file, %cfg);
+	my @files = &get_potential_files_substring($file, %cfg);
+	if($#files == -1) {
+		@files = &get_potential_files_fuzzy($file, %cfg);
+	}
 	@files = &filter_directories(@files);
 
 	## We only want to show the file list if it's exactly 1, since the file
@@ -182,6 +185,37 @@ sub get_potential_files {
 	my $files = `$find $filters`;
 	return split("\n", $files);
 }
+
+sub get_potential_files_substring {
+	my ($file, %cfg) = @_;
+	my @parts = split(//, $file);
+	@parts = map {
+		if($_ eq "."){
+			"[^/]*?\\.";
+		}elsif($_ eq '"'){
+			"\\\"";
+		}elsif($_ eq "/"){
+			".*?/.*?";
+		}else{
+			$_;
+		}
+	} @parts;
+	my $regex = join("", @parts);
+	my $find = "find . ";
+	my $filters = &ignore_commands(%cfg);
+	my $files = `$find $filters`;
+	my @files = split("\n",$files);
+	
+	print "Regex: $regex\n";
+	my @newfiles = ();
+	foreach (@files) {
+		if(m{$regex}si) {
+			push(@newfiles, $_);
+		}
+	}
+	return @newfiles;
+}
+	
 
 sub get_potential_files_fuzzy {
 	my ($file, %cfg)  = @_;
