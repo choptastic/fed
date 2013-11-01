@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.1.0 (in development)
+## v0.1.0
 
 * First functional version that includes all initial design ideas.
 * Default configuration, Project-specific file (.fed), and user-preference file

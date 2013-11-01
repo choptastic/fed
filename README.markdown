@@ -49,7 +49,6 @@ depending on your configuration above, `fed` will either:
 
   * `fail`: fail by letting you know which files conflict
   * `ask`: ask you which file you wish to load
-  * `loadall`: load all files in the editor **(NOT IMPLEMENTED)**
 
 ## Fuzzy Searching
 
@@ -119,14 +118,6 @@ no_exist=fail
 ```		
 
 *NOTE* `alt_roots` has no meaning in a project-specific `.fed` file
-
-## Additional Switches (NOT IMPLEMENTED YET)
-
-You can provide additional switches to your editor by putting them before the
-filenames.
-
-As `fed` does not currently have any switches of its own except for `-init` and
-`-global` it will simply pass all provided switches to the editor.
 
 ## FAQ
 
