@@ -129,10 +129,10 @@ sub execute_none {
 	}elsif($ne eq "create") {
 		&execute_single($cfg, $file);
 	}elsif($ne eq "ask") {
-		my $response = &get_until_valid("No matching file found. How would you like to proceed? (c)reate or (f)ail",("c","f"));
+		my $response = &get_until_valid("No matching file found. How would you like to proceed? (c)reate or (q)uit",("c","q"));
 		if($response eq "c") {
 			&execute_single($cfg, $file);
-		}elsif($response eq "f") {
+		}elsif($response eq "f" or $response eq "q") {
 			die("No matching file. Failing");
 		}
 	}
@@ -170,8 +170,8 @@ sub ask_multiple {
 	foreach my $i (keys(@files)) {
 		print("\t(".($i+1)."): $files[$i]\n");
 	}
-	my $filenum = &get_until_valid_range("Which file to load [1-".($#files+1)." or (f)ail]?", 1, $#files+1);
-	if($filenum eq "f") {
+	my $filenum = &get_until_valid_range("Which file to load [1-".($#files+1)." or (q)uit]?", 1, $#files+1);
+	if($filenum eq "f" or $filenum eq "q") {
 		die("Cancelling");
 	}else{
 		return $files[$filenum-1];
@@ -208,7 +208,7 @@ sub get_potential_files_wrapper {
 	my $files = `$find $filters`;
 	my @files = split("\n",$files);
 
-	print "Regex: $regex\n";
+	#print "Regex: $regex\n";
 	my @newfiles = ();
 	foreach (@files) {
 		if(m{$regex}si) {
@@ -399,7 +399,7 @@ sub get_until_valid_range {
 		print "$prompt: ";
 		$val = <STDIN>;
 		chomp($val);
-	}until($val eq "f" or (&is_integer($val) and $val>=$min and $val<=$max));
+	}until($val eq "f" or $val eq "q" or (&is_integer($val) and $val>=$min and $val<=$max));
 	return $val;
 }	
 
