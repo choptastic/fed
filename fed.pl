@@ -7,7 +7,7 @@ use Cwd;
 &main(@ARGV);
 
 sub version {
-	return "0.0.2 (2013-10-10)";
+	return "0.0.3 (2013-10-31)";
 }
 
 sub main {
@@ -208,7 +208,7 @@ sub get_potential_files_wrapper {
 	my $files = `$find $filters`;
 	my @files = split("\n",$files);
 
-	#print "Regex: $regex\n";
+	print "Regex: $regex\n";
 	my @newfiles = ();
 	foreach (@files) {
 		if(m{$regex}si) {
@@ -295,7 +295,7 @@ sub parse_config {
 			}
 		}elsif(/ignore\s*=\s*(.*)/){
 			my @ignore=split(" ",$1);
-			$config{"ignore"}=\@ignore;
+			push(@{$config{"ignore"}}, @ignore);
 		}elsif(/no_exist\s*=\s*(create|fail|ask)/){
 			$config{"no_exist"}=$1;
 		}elsif(/multiple_matches\s*=\s*(fail|ask|loadall)/){
