@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.1.1
+
+* Remove smartmatching operator, which is experimental and generating warnings
+  on Perl 5.18+.
+* Fix error on Perl 5.20 for ambiguous return value.
+
 ## v0.1.0
 
 * First functional version that includes all initial design ideas.

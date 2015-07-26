@@ -136,6 +136,12 @@ editor `vim -l`.
 
 Then any `fed` commands would be translated to `vim -l filename`
 
+## Thanks
+
+Additional thanks to:
+
+* Stefan Schmiedl ([@swsch](https://github.com/swsch))
+
 ## TODO
 
 See [TODO.markdown](http://github.com/choptastic/fed/blob/master/TODO.markdown)
@@ -151,4 +157,4 @@ See [CHANGELOG.markdown](http://github.com/choptastic/fed/blob/master/CHANGELOG.
 
 ## Copyright
 
-`fed` is copyright 2013 (c) [Jesse Gumm](http://jessegumm.com) ([@jessegumm](http://twitter.com/jessegumm))
+`fed` is copyright 2013-2015 (c) [Jesse Gumm](http://jessegumm.com) ([@jessegumm](http://twitter.com/jessegumm))
