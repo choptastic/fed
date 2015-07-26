@@ -388,8 +388,16 @@ sub get_until_valid {
 		print "$prompt (".join("/",@list)."): ";
 		$val = <STDIN>;
 		chomp($val);
-	} while(not($val ~~ @list));
+	} while(not(in_list($val,@list)));
 	return $val;
+}
+
+sub in_list {
+	my ($val, @list) = @_;
+	for (@list) {
+		return 1 if($val eq $_);
+	}
+	return 0;
 }
 
 sub get_until_valid_range {
@@ -405,5 +413,5 @@ sub get_until_valid_range {
 
 sub is_integer {
 	my ($val) = @_;
-	return !ref($val) and $val == int($val); ## tests whether is numerically equal to itself.
+	return (!ref($val) and $val == int($val)); ## tests whether is numerically equal to itself.
 }
