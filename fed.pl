@@ -7,7 +7,7 @@ use Cwd;
 &main(@ARGV);
 
 sub version {
-	return "0.1.1 (2015-07-26)";
+	return "0.2.0 (2022-08-30)";
 }
 
 sub main {
@@ -35,6 +35,7 @@ sub execute_init {
 	my($file) = @_;
 	my %cfg = &default_config();
 	%cfg = load_config($file, %cfg);
+	%cfg = update_config_from_env(%cfg);
 
 	print("Initializing $file\n");
 
@@ -142,7 +143,9 @@ sub execute_single {
 	my ($cfg, $file) = @_;
 	my $editor = $cfg->{"editor"};
 	my $ext = &extract_extension($file);
-	if(defined($cfg->{"editor_$ext"})) {
+	if(defined($cfg->{"force_editor"})) {
+		system($cfg->{"force_editor"}." \"$file\"");
+	}elsif(defined($cfg->{"editor_$ext"})) {
 		system($cfg->{"editor_$ext"}." \"$file\"");
 	}elsif(defined($cfg->{"editor"})) {
 		system($cfg->{"editor"}." \"$file\"");
@@ -263,6 +266,9 @@ sub default_config{
 		"no_exist","ask",
 		"multiple_matches","ask"
 	);
+	if(defined($ENV{"FORCE_EDITOR"})) {
+		$config{"force_editor"}=$ENV{"FORCE_EDITOR"};
+	}
 	return %config;
 }
 

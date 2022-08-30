@@ -136,6 +136,20 @@ editor `vim -l`.
 
 Then any `fed` commands would be translated to `vim -l filename`
 
+## What if I want to use a specific editor for a specific execution of fed?
+
+You can force fed to use an editor (or any executable of your choice) by
+specifying the `FORCE_EDITOR` environment variable
+
+For example:
+
+```bash
+FORCE_EDITOR=nano fed some_file.t
+```
+
+In that scenario of what editors are specified in your fed configs, nano will
+be the editor that's used.
+
 ## Thanks
 
 Additional thanks to:
