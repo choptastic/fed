@@ -21,14 +21,32 @@ sub main {
 	}elsif($file eq "-global" || $file eq "--global") {
 		&execute_init($ENV{"HOME"}."/.fedconf");
 	}elsif($file eq "-prompt" || $file eq "--prompt") {
-		$file = &get("Enter the file pattern to find and open: ", "");
-		if($file eq "") {
-			die("Blank search criteria provided");
-		} else {
-			&execute_file($file);
-		}
+		&prompt_and_execute_file();
+	}elsif($file eq "-screen_prompt" || $file eq "--screen_prompt") {
+		&screen_prompt_and_execute_file();
 	}else{
 		&execute_file(@_);
+	}
+}
+
+sub screen_prompt_and_execute_file {
+	my $STY = $ENV{"STY"};
+	my $window_num = &get_window_num();
+	system("screen -r $STY -x -X eval \"other\" \"split\" \"focus down\" \"resize 15\" \"select $window_num\"");
+
+	my %seed_config = (
+		"screen_prompt_mode",1
+	);
+	&prompt_and_execute_file(%seed_config);
+}
+
+sub prompt_and_execute_file {
+	my (%cfg) = @_;
+	my ($file) = &get("Enter the file pattern to find and open: ", "");
+	if($file eq "") {
+		die("Blank search criteria provided");
+	} else {
+		&execute_file($file, %cfg);
 	}
 }
 
@@ -38,6 +56,8 @@ sub execute_usage {
 	print "       fed -global    # Initializes fed configuration for all your projects\n";
 	print "       fed Filename   # Searches for Filename in the project and opens it in your editor\n";
 	print "       fed -prompt    # Prompts the user to provide their desired filename\n";
+	print "       fed -screen_prompt  # If using GNU screen, opens a small window and prompts\n";
+	print "                             the user to provide their desired filename\n";
 
 }
 
@@ -85,9 +105,9 @@ Separate each file by spaces.",$alt_roots);
 				
 
 sub execute_file {
-	my($file) = @_;
+	my($file, %seed_cfg) = @_;
 
-	my %cfg = &default_config();
+	my %cfg = &default_config(%seed_cfg);
 	%cfg = &load_config($ENV{"HOME"}."/.fedconf",%cfg);
 
 	to_fed_root(%cfg);
@@ -161,26 +181,67 @@ sub maybe_execute_single {
 
 		my $filename = &basename($file);
 
-		print "Searching open GNU Screen windows for $filename\n";
+		print("Searching open GNU Screen windows for $filename\n");
+		select()->flush();
+
 		#print "Existing Windows:\n$windows\n";
 		if($windows =~ /(\d+).?\$ $filename/) {
 			my $window = $1;
-			print "Found GNU Screen Window $window with this file open.\nSwitching to it in...\n";
-			for(my $i=3; $i>0; $i--) {
-				print("$i...\n");
-				select()->flush();
-				sleep(1);
-			}
-			print("Go!\n");
+			print("Found GNU Screen Window $window with this file open.\nSwitching to it...\n");
+
+			#select()->flush();
+			#for(my $i=3; $i>0; $i--) {
+			#	print("$i...\n");
+			#	select()->flush();
+			#	sleep(1);
+			#}
+			#print("Go!\n");
+			#
+			
+			# Here, we switch back to our original main region and select the found window.
+			# Then we just close the region that was created to prompt for the new file
+			&screen_back_to_main($cfg);
 			system("screen -r $STY -x -Q select $window");
+			&screen_after_found($cfg);
 		}else{
-			system("screen -r $STY -x -X title \"$filename\"");
+
+			# Here, since we actually have to open a new file, we're going to open that file in a new
+			# window, then clean up the current script and exit, cleaning up afterward.
+			#my $new_window_num = &get_window_num();
+			&screen_back_to_main($cfg);
 			&execute_single($cfg, $file);
+			system("screen -r $STY -x -X title \"$filename\"");
+			&screen_after_found($cfg);
+
 		}
 	}else{
 		print "Not running under GNU Screen\n";
 		&execute_single($cfg, $file);
 	}
+}
+
+sub screen_back_to_main {
+	my($cfg) = @_;
+	if(defined($cfg->{"screen_prompt_mode"})) {
+		my $STY = $cfg->{"screen_id"};
+		system("screen -r $STY -x -X eval \"focus up\"");
+	}
+}
+
+sub screen_after_found {
+	my($cfg) = @_;
+	if(defined($cfg->{"screen_prompt_mode"})) {
+		my $STY = $cfg->{"screen_id"};
+		print("Moving focus down and trying to remove region");
+		system("screen -r $STY -x -X eval \"focus down\" \"remove\"");
+	}
+}
+
+sub get_window_num {
+	my $STY = $ENV{"STY"};
+	my $raw = `screen -r $STY -x -Q number`;
+	$raw =~ /^(\d+)/;
+	return $1;
 }
 
 sub basename {
@@ -192,16 +253,25 @@ sub basename {
 
 sub execute_single {
 	my ($cfg, $file) = @_;
+	my $filename = &basename($file);
 	my $editor = $cfg->{"editor"};
 	my $ext = &extract_extension($file);
+	my $cmd = "";
 	if(defined($cfg->{"force_editor"})) {
-		system($cfg->{"force_editor"}." \"$file\"");
+		$cmd = $cfg->{"force_editor"}." \"$file\"";
 	}elsif(defined($cfg->{"editor_$ext"})) {
-		system($cfg->{"editor_$ext"}." \"$file\"");
+		$cmd = $cfg->{"editor_$ext"}." \"$file\"";
 	}elsif(defined($cfg->{"editor"})) {
-		system($cfg->{"editor"}." \"$file\"");
+		$cmd = $cfg->{"editor"}." \"$file\"";
 	}else{
 		die("No editor defined for file with extension $ext. Either define a univeral editor or add extension-specific editors");
+	}
+	
+	if(defined($cfg->{"screen_prompt_mode"})) {
+		my $STY = $cfg->{"screen_id"};
+		system("screen -r $STY -x -X screen -t \"$filename\" $cmd");
+	}else{
+		system($cmd);
 	}
 }
 
@@ -311,6 +381,8 @@ sub ignore_commands {
 }
 
 sub default_config{
+	my (%seed_config) = @_;
+
 	my %config = (
 		"alt_roots",[],
 		"ignore",["~\$"],
@@ -324,7 +396,8 @@ sub default_config{
 	if(defined($ENV{"STY"})) {
 		$config{"screen_id"}=$ENV{"STY"};
 	}
-	return %config;
+	my %final_config = (%seed_config, %config);
+	return %final_config;
 }
 
 sub load_config{
