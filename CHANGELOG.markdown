@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## v0.3.0
+
+* Added GNU Screen awareness. If running from within GNU Screen, fed will
+  auto-rename the window to the name of the opened file, and if the file is
+  already open in an existing GNU Screen window, will switch screen to that
+  window.
+
+## v0.2.0
+
+* Add `FORCE_EDITOR` env variable
+* Add a `-prompt` switch that will then prompt the user to provide a pattern
+  for finding and opening.
+* Add support for `--` style switches in addition to `-` switches
+
 ## v0.1.1
 
 * Remove smartmatching operator, which is experimental and generating warnings

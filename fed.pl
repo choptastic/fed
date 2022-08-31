@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 use Cwd;
+#use File::Basename;
 
 &main(@ARGV);
 
 sub version {
-	return "0.2.0 (2022-08-30)";
+	return "0.3.0 (2022-08-31)";
 }
 
 sub main {
@@ -15,10 +16,17 @@ sub main {
 
 	if($#_ == -1 or $#_>0) {
 		&execute_usage();
-	}elsif($file eq "-init") {
+	}elsif($file eq "-init" || $file eq "--init") {
 		&execute_init(".fed");
-	}elsif($file eq "-global") {
+	}elsif($file eq "-global" || $file eq "--global") {
 		&execute_init($ENV{"HOME"}."/.fedconf");
+	}elsif($file eq "-prompt" || $file eq "--prompt") {
+		$file = &get("Enter the file pattern to find and open: ", "");
+		if($file eq "") {
+			die("Blank search criteria provided");
+		} else {
+			&execute_file($file);
+		}
 	}else{
 		&execute_file(@_);
 	}
@@ -29,6 +37,8 @@ sub execute_usage {
 	print "Usage: fed -init      # Initializes fed for the local project\n";
 	print "       fed -global    # Initializes fed configuration for all your projects\n";
 	print "       fed Filename   # Searches for Filename in the project and opens it in your editor\n";
+	print "       fed -prompt    # Prompts the user to provide their desired filename\n";
+
 }
 
 sub execute_init {
@@ -116,7 +126,7 @@ sub execute_files {
 	if($#files == -1) {
 		&execute_none($cfg, $file);
 	}elsif($#files == 0) {
-		&execute_single($cfg, $files[0]);
+		&maybe_execute_single($cfg, $files[0]);
 	}elsif($#files > 0) {
 		&execute_multiple($cfg, @files);
 	}
@@ -128,16 +138,57 @@ sub execute_none {
 	if($ne eq "fail") {
 		die("No matching file. Failing per configuration (no_exist = fail)\n");
 	}elsif($ne eq "create") {
-		&execute_single($cfg, $file);
+		&maybe_execute_single($cfg, $file);
 	}elsif($ne eq "ask") {
 		my $response = &get_until_valid("No matching file found. How would you like to proceed? (c)reate or (q)uit",("c","q"));
 		if($response eq "c") {
-			&execute_single($cfg, $file);
+			&maybe_execute_single($cfg, $file);
 		}elsif($response eq "f" or $response eq "q") {
 			die("No matching file. Failing");
 		}
 	}
 }
+
+
+sub maybe_execute_single {
+	my ($cfg, $file) = @_;
+	if(defined($cfg->{"screen_id"})) {
+		my $STY = $cfg->{"screen_id"};
+		print "Running under GNU Screen ($STY)\n";
+		my $windows=`screen -r $STY -x -Q windows`;
+
+		chomp($file);
+
+		my $filename = &basename($file);
+
+		print "Searching open GNU Screen windows for $filename\n";
+		#print "Existing Windows:\n$windows\n";
+		if($windows =~ /(\d+).?\$ $filename/) {
+			my $window = $1;
+			print "Found GNU Screen Window $window with this file open.\nSwitching to it in...\n";
+			for(my $i=3; $i>0; $i--) {
+				print("$i...\n");
+				select()->flush();
+				sleep(1);
+			}
+			print("Go!\n");
+			system("screen -r $STY -x -Q select $window");
+		}else{
+			system("screen -r $STY -x -X title \"$filename\"");
+			&execute_single($cfg, $file);
+		}
+	}else{
+		print "Not running under GNU Screen\n";
+		&execute_single($cfg, $file);
+	}
+}
+
+sub basename {
+	my($file) = @_;
+	my @parts = split("/", $file);
+	return $parts[$#parts];
+}
+	
 
 sub execute_single {
 	my ($cfg, $file) = @_;
@@ -163,7 +214,7 @@ sub execute_multiple {
 		die("Load All not implemented");
 	}elsif($mm eq "ask") {
 		my $file = &ask_multiple(@files);
-		&execute_single($cfg, $file);
+		&maybe_execute_single($cfg, $file);
 	}
 }
 
@@ -268,6 +319,10 @@ sub default_config{
 	);
 	if(defined($ENV{"FORCE_EDITOR"})) {
 		$config{"force_editor"}=$ENV{"FORCE_EDITOR"};
+	}
+	# Are we running from within gnu screen?
+	if(defined($ENV{"STY"})) {
+		$config{"screen_id"}=$ENV{"STY"};
 	}
 	return %config;
 }
