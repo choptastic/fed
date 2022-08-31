@@ -6,6 +6,11 @@
   auto-rename the window to the name of the opened file, and if the file is
   already open in an existing GNU Screen window, will switch screen to that
   window.
+* Added a new `-screen_prompt` option that's designed to be connected to a
+  GNU Screen hotkey. For Example: `bind "^e" eval "screen fed --screen_prompt"`.
+  With that config in your `.screenrc`, when you press `C-a C-e`, fed will open
+  a small region at the bottom of your terminal to prompt for a filename.
+  This will auto-close once fed is finished.
 
 ## v0.2.0
 
