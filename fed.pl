@@ -291,23 +291,25 @@ sub execute_multiple {
 	my($cfg, @files) = @_;
 	my $mm = $cfg->{"multiple_matches"};
 	if($mm eq "fail") {
+		&screen_close_region($cfg);
 		die("Multiple matching files. Failing per configuration (multiple_matches = fail)\n");
 	}elsif($mm eq "loadall") {
 		die("Load All not implemented");
 	}elsif($mm eq "ask") {
-		my $file = &ask_multiple(@files);
+		my $file = &ask_multiple($cfg, @files);
 		&maybe_execute_single($cfg, $file);
 	}
 }
 
 sub ask_multiple {
-	my @files = @_;
+	my ($cfg, @files) = @_;
 	print("Multiple Matching Files:\n");
 	foreach my $i (keys(@files)) {
 		print("\t(".($i+1)."): $files[$i]\n");
 	}
 	my $filenum = &get_until_valid_range("Which file to load [1-".($#files+1)." or (q)uit]?", 1, $#files+1);
 	if($filenum eq "f" or $filenum eq "q") {
+		&screen_close_region($cfg);
 		die("Cancelling");
 	}else{
 		return $files[$filenum-1];
@@ -517,8 +519,8 @@ sub extract_extension {
 
 sub get {
 	my($prompt, $default) = @_;
-	my $default_prompt = ($default) ? " [Default: $default]" : "";
-	print "$prompt$default_prompt: ";
+	my $default_prompt = ($default) ? " [Default: $default]: " : "";
+	print "$prompt$default_prompt";
 	my $val = <STDIN>;
 	chomp($val);
 	if($val eq "") {
