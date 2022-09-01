@@ -44,6 +44,7 @@ sub prompt_and_execute_file {
 	my (%cfg) = @_;
 	my ($file) = &get("Enter the file pattern to find and open: ", "");
 	if($file eq "") {
+		&screen_close_region(\%cfg);
 		die("Blank search criteria provided");
 	} else {
 		&execute_file($file, %cfg);
@@ -64,8 +65,8 @@ sub execute_usage {
 sub execute_init {
 	my($file) = @_;
 	my %cfg = &default_config();
-	%cfg = load_config($file, %cfg);
-	%cfg = update_config_from_env(%cfg);
+	%cfg = &load_config($file, %cfg);
+	%cfg = &update_config_from_env(%cfg);
 
 	print("Initializing $file\n");
 
@@ -110,7 +111,7 @@ sub execute_file {
 	my %cfg = &default_config(%seed_cfg);
 	%cfg = &load_config($ENV{"HOME"}."/.fedconf",%cfg);
 
-	to_fed_root(%cfg);
+	&to_fed_root(%cfg);
 	%cfg = &load_config(".fed",%cfg);
 
 	&print_config(%cfg);
@@ -156,6 +157,7 @@ sub execute_none {
 	my ($cfg, $file) = @_;
 	my $ne = $cfg->{"no_exist"};
 	if($ne eq "fail") {
+		&screen_close_region($cfg);
 		die("No matching file. Failing per configuration (no_exist = fail)\n");
 	}elsif($ne eq "create") {
 		&maybe_execute_single($cfg, $file);
@@ -164,6 +166,7 @@ sub execute_none {
 		if($response eq "c") {
 			&maybe_execute_single($cfg, $file);
 		}elsif($response eq "f" or $response eq "q") {
+			&screen_close_region($cfg);
 			die("No matching file. Failing");
 		}
 	}
@@ -217,6 +220,15 @@ sub maybe_execute_single {
 	}else{
 		print "Not running under GNU Screen\n";
 		&execute_single($cfg, $file);
+	}
+}
+
+sub screen_close_region{
+	my($cfg) = @_;
+	if(defined($cfg->{"screen_prompt_mode"})) {
+		my $STY = $cfg->{"screen_id"};
+		print("closing region\n");
+		system("screen -r $STY -x -X eval \"remove\"");
 	}
 }
 
@@ -505,7 +517,8 @@ sub extract_extension {
 
 sub get {
 	my($prompt, $default) = @_;
-	print "$prompt [Default: $default]: ";
+	my $default_prompt = ($default) ? " [Default: $default]" : "";
+	print "$prompt$default_prompt: ";
 	my $val = <STDIN>;
 	chomp($val);
 	if($val eq "") {
