@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.3.1
+
+* When the `-screen_prompt` menu is used from within GNU screen, it'll now
+  scale and resize the prompt window based on the size of the return, if there
+  are multiple matching files and fed is configured to `ask` in that situation.
+
 ## v0.3.0
 
 * Added GNU Screen awareness. If running from within GNU Screen, fed will

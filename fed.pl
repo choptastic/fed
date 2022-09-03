@@ -8,7 +8,7 @@ use Cwd;
 &main(@ARGV);
 
 sub version {
-	return "0.3.0 (2022-08-31)";
+	return "0.3.1 (2022-09-03)";
 }
 
 sub main {
@@ -32,12 +32,20 @@ sub main {
 sub screen_prompt_and_execute_file {
 	my $STY = $ENV{"STY"};
 	my $window_num = &get_window_num();
-	system("screen -r $STY -x -X eval \"other\" \"split\" \"focus down\" \"resize 15\" \"select $window_num\"");
+	system("screen -r $STY -x -X eval \"other\" \"split\" \"focus down\" \"resize 5\" \"select $window_num\"");
 
 	my %seed_config = (
 		"screen_prompt_mode",1
 	);
 	&prompt_and_execute_file(%seed_config);
+}
+
+sub screen_resize_window {
+	my ($size, $cfg) = @_;
+	my $STY = $cfg->{"screen_id"};
+	if($cfg->{"screen_prompt_mode"}) {
+		system("screen -r $STY -x -X eval \"resize $size\"");
+	}
 }
 
 sub prompt_and_execute_file {
@@ -303,10 +311,18 @@ sub execute_multiple {
 
 sub ask_multiple {
 	my ($cfg, @files) = @_;
+
+	my $size = $#files + 6;
+
+	$size=40 if($size>40);
+	&screen_resize_window($size, $cfg);
+
 	print("Multiple Matching Files:\n");
 	foreach my $i (keys(@files)) {
 		print("\t(".($i+1)."): $files[$i]\n");
 	}
+
+
 	my $filenum = &get_until_valid_range("Which file to load [1-".($#files+1)." or (q)uit]?", 1, $#files+1);
 	if($filenum eq "f" or $filenum eq "q") {
 		&screen_close_region($cfg);
