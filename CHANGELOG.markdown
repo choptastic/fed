@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.3.2
+
+* Added `make screen` to install a default rule to `$HOME/.screenrc`
+
 ## v0.3.1
 
 * When the `-screen_prompt` menu is used from within GNU screen, it'll now
