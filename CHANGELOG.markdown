@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.3.3
+
+* Improved the screen title searching (handle long filenames better)
+
 ## v0.3.2
 
 * Added `make screen` to install a default rule to `$HOME/.screenrc`

@@ -8,7 +8,7 @@ use Cwd;
 &main(@ARGV);
 
 sub version {
-	return "0.3.1 (2022-09-03)";
+	return "0.3.3 (2022-09-28)";
 }
 
 sub main {
@@ -183,21 +183,16 @@ sub execute_none {
 
 sub maybe_execute_single {
 	my ($cfg, $file) = @_;
+
 	if(defined($cfg->{"screen_id"})) {
 		my $STY = $cfg->{"screen_id"};
-		print "Running under GNU Screen ($STY)\n";
-		my $windows=`screen -r $STY -x -Q windows`;
-
 		chomp($file);
-
 		my $filename = &basename($file);
 
-		print("Searching open GNU Screen windows for $filename\n");
-		select()->flush();
+		my $window = &get_window_with_title($cfg, $filename);
 
 		#print "Existing Windows:\n$windows\n";
-		if($windows =~ /(\d+).?\$ $filename/) {
-			my $window = $1;
+		if($window > -1) {
 			print("Found GNU Screen Window $window with this file open.\nSwitching to it...\n");
 
 			#select()->flush();
@@ -207,6 +202,7 @@ sub maybe_execute_single {
 			#	sleep(1);
 			#}
 			#print("Go!\n");
+			#
 			#
 			
 			# Here, we switch back to our original main region and select the found window.
@@ -230,6 +226,32 @@ sub maybe_execute_single {
 		&execute_single($cfg, $file);
 	}
 }
+
+sub get_window_with_title {
+	my ($cfg, $filename) = @_;
+	if(defined($cfg->{"screen_id"})) {
+
+		my $STY = $cfg->{"screen_id"};
+		print "Running under GNU Screen ($STY)\n";
+
+		print("Searching open GNU Screen windows for $filename\n");
+		select()->flush();
+
+		my @windows;
+		for(my $i=0; $i<99; $i++) {
+			my $switch_result = `screen -r $STY -x -Q select $i`;
+			my $title = `screen -r $STY -x -Q title`;
+			chomp($title);
+			if($title eq $filename) {
+				return $i;
+			}
+		}
+	}
+	return -1;
+}
+
+			
+
 
 sub screen_close_region{
 	my($cfg) = @_;
