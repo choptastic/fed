@@ -74,7 +74,7 @@ sub execute_init {
 	my($file) = @_;
 	my %cfg = &default_config();
 	%cfg = &load_config($file, %cfg);
-	%cfg = &update_config_from_env(%cfg);
+	%cfg = &update_config_from_global(%cfg);
 
 	print("Initializing $file\n");
 
@@ -450,6 +450,12 @@ sub default_config{
 	}
 	my %final_config = (%seed_config, %config);
 	return %final_config;
+}
+
+sub update_config_from_global{
+	my (%cfg) = @_;
+	my $file = $ENV{"HOME"}."/.fedconf";
+	return &load_config($file, %cfg);
 }
 
 sub load_config{
