@@ -8,7 +8,7 @@ use Cwd;
 &main(@ARGV);
 
 sub version {
-	return "0.3.3 (2022-09-28)";
+	return "0.4.0 (2023-02-01)";
 }
 
 sub main {
@@ -59,8 +59,12 @@ sub prompt_and_execute_file {
 	}
 }
 
-sub execute_usage {
+sub print_title {
 	print "fed :: The (F)inding (ED)itor. Version ".&version()."\n";
+}
+
+sub execute_usage {
+	&print_title();
 	print "Usage: fed -init      # Initializes fed for the local project\n";
 	print "       fed -global    # Initializes fed configuration for all your projects\n";
 	print "       fed Filename   # Searches for Filename in the project and opens it in your editor\n";
@@ -73,36 +77,50 @@ sub execute_usage {
 sub execute_init {
 	my($file) = @_;
 	my %cfg = &default_config();
-	%cfg = &load_config($file, %cfg);
 	%cfg = &update_config_from_global(%cfg);
+	%cfg = &load_config($file, %cfg);
 
-	print("Initializing $file\n");
+	
+	print("*********************************************************\n");
+	&print_title();
+	print("*********************************************************\n");
+	print("   Initializing $file\n");
+	print("*********************************************************\n");
 
 	my $new_config = "";
 	my $ignore = join(" ",@{$cfg{"ignore"}});
 	$ignore = "none" if($ignore eq "");
-	$ignore = &get("Enter any file patterns you wish to ignore.\n
-These are file patterns that work with 'grep'.
-Separate with spaces. ",$ignore);
+	$ignore = &get("* Enter any file patterns you wish to EXCLUDE.
+  That is, NEVER find files whose path matches one or more of these patterns.
+  These are file patterns that work with 'grep'.
+  Separate with spaces. ",$ignore);
 	$new_config .= "ignore=$ignore\n";
 
+	my $only = join(" ",@{$cfg{"only"}});
+	$only = "none" if ($ignore eq "");
+	$only = &get("* Enter any file patterns you wish to INCLUDE.
+  That is, ONLY find files whose path matches one or more of these patterns.
+  These are file patterns that work with 'grep'.
+  Separate with spaces. ",$only);
+	$new_config .= "only=$only\n";
+
 	my $multiple_matches = $cfg{"multiple_matches"};
-	$multiple_matches = &get_until_valid("How to handle multiple matching filenames?",("ask","fail"));
+	$multiple_matches = &get_until_valid("* How to handle multiple matching filenames?",("ask","fail"));
 	$new_config .= "multiple_matches=$multiple_matches\n";
 
 	my $no_exist = $cfg{"no_exist"};
-	$no_exist = &get_until_valid("How to handle filenames that don't exist?",("ask","create","fail"));
+	$no_exist = &get_until_valid("* How to handle filenames that don't exist?",("ask","create","fail"));
 	$new_config .= "no_exist=$no_exist\n";
 
 	if($file =~ /fedconf$/) {
 		my $editor = $cfg{"editor"};
-		$editor = &get("What would you like to use as your default editor?", $editor);
+		$editor = &get("* What would you like to use as your default editor?", $editor);
 		$new_config .= "editor=$editor\n";
 	
 		my $alt_roots = join(" ",@{$cfg{"alt_roots"}});
-		$alt_roots = &get("Enter any other filenames you'd like to use whose existence represents the
-root of a project (e.g. .git or .hg).
-Separate each file by spaces.",$alt_roots);
+		$alt_roots = &get("* Enter any other filenames you'd like to use whose existence represents the
+  root of a project (e.g. .git or .hg).
+  Separate each file with spaces.",$alt_roots);
 		$new_config .= "alt_roots=$alt_roots\n";
 	}
 
@@ -380,8 +398,10 @@ sub get_potential_files_wrapper {
 	@parts = &{$remap_fun}(@parts);
 	my $regex = join($part_joiner,@parts);
 	my $find = "find . ";
-	my $filters = &ignore_commands(%cfg);
-	my $files = `$find $filters`;
+	my $filters = &ignore_and_only_commands(%cfg);
+	my $cmd = "$find $filters";
+	print("Running: $cmd\n");
+	my $files = `$cmd`;
 	my @files = split("\n",$files);
 
 	#print "Regex: $regex\n";
@@ -423,11 +443,16 @@ sub remap_parts_substring {
 	} @_;
 }
 
-sub ignore_commands {
+sub ignore_and_only_commands {
 	my (%cfg) = @_;
 	my $filters;
 	foreach my $ignore (@{$cfg{"ignore"}}) {
 		$filters .= " | grep -v \"$ignore\" ";
+	}
+	
+	my $only_filters = join("\\|",@{$cfg{"only"}});
+	if($only_filters ne "") {
+		$filters .= " | grep \"$only_filters\" ";
 	}
 	return $filters;
 }
@@ -438,6 +463,7 @@ sub default_config{
 	my %config = (
 		"alt_roots",[],
 		"ignore",["~\$"],
+		"only",[],
 		"no_exist","ask",
 		"multiple_matches","ask"
 	);
@@ -488,6 +514,9 @@ sub parse_config {
 		}elsif(/ignore\s*=\s*(.*)/){
 			my @ignore=split(" ",$1);
 			push(@{$config{"ignore"}}, @ignore);
+		}elsif(/only\s*=\s*(.*)/){
+			my @only=split(" ",$1);
+			push(@{$config{"only"}}, @only);
 		}elsif(/no_exist\s*=\s*(create|fail|ask)/){
 			$config{"no_exist"}=$1;
 		}elsif(/multiple_matches\s*=\s*(fail|ask|loadall)/){
