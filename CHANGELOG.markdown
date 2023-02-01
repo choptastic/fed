@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.4.0
+
+* Update the config to add a new `only` attribute, which serves as a forced
+  include-only.  This means you can tell fed to only include options that also
+  match the regexes in the `only` attribute of the config.
+
 ## v0.3.3
 
 * Improved the screen title searching (handle long filenames better)
